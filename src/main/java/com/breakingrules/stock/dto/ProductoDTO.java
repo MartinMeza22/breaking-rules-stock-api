@@ -1,12 +1,14 @@
 package com.breakingrules.stock.dto;
 
+import com.breakingrules.stock.model.Talle;
+
 import java.math.BigDecimal;
 
 public class ProductoDTO {
 
     private Integer id;
     private String nombre;
-    private String talle;
+    private Talle talle;
     private String categoria;
     private String color;
     private BigDecimal precio;
@@ -14,7 +16,7 @@ public class ProductoDTO {
 
     public ProductoDTO() {}
 
-    public ProductoDTO(Integer id, String nombre, String categoria, String talle,
+    public ProductoDTO(Integer id, String nombre, String categoria, Talle talle,
                        String color, BigDecimal precio, Integer stock) {
         this.id = id;
         this.nombre = nombre;
@@ -49,11 +51,11 @@ public class ProductoDTO {
         this.categoria = categoria;
     }
 
-    public String getTalle() {
+    public Talle getTalle() {
         return talle;
     }
 
-    public void setTalle(String talle) {
+    public void setTalle(Talle talle) {
         this.talle = talle;
     }
 

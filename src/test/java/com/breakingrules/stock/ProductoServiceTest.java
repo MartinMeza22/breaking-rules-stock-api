@@ -1,6 +1,7 @@
 package com.breakingrules.stock;
 
 import com.breakingrules.stock.model.Producto;
+import com.breakingrules.stock.model.Talle;
 import com.breakingrules.stock.repository.ProductoRepository;
 import com.breakingrules.stock.service.ProductoService;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +32,7 @@ public class ProductoServiceTest {
                     null,
                     "Remera Negra",
                     "Remera básica",
-                    "M",
+                    Talle.M,
                     "Negro",
                     new BigDecimal(10),
                     10

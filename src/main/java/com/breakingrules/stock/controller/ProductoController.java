@@ -1,11 +1,14 @@
 package com.breakingrules.stock.controller;
 
 import com.breakingrules.stock.dto.ProductoDTO;
+import com.breakingrules.stock.dto.ProductoStatsDTO;
 import com.breakingrules.stock.model.Producto;
+import com.breakingrules.stock.model.Talle;
 import com.breakingrules.stock.service.ProductoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +17,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 @Tag(name = "Productos", description = "Operaciones relacionadas a productos de indumentaria")
 @RestController
 @RequestMapping("/productos")
@@ -28,8 +32,11 @@ public class ProductoController {
 
     @Operation(summary = "Listar productos", description = "Obtiene todos los productos registrados en el sistema")
     @GetMapping
-    public List<ProductoDTO> listar() {
-        return service.listar();
+    public Page<ProductoDTO> listar(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return service.listarPaginado(page, size);
     }
 
     @Operation(summary = "Crear producto")
@@ -44,10 +51,16 @@ public class ProductoController {
 
     @Operation(summary = "Buscar productos por nombre", description = "Filtra productos que contengan el texto indicado en el nombre")
     @GetMapping("/buscar")
-    public List<ProductoDTO> buscar(@RequestParam String nombre) {
-        return service.buscarPorNombre(nombre);
+    public Page<ProductoDTO> buscar(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) Talle talle,
+            @RequestParam(required = false) Integer stockMin,
+            @RequestParam(required = false) Integer stockMax,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return service.filtrar(nombre, talle, stockMin, stockMax, page, size);
     }
-
     @Operation(summary = "Productos con stock bajo", description = "Devuelve productos cuyo stock es menor o igual al mínimo indicado")
     @GetMapping("/stock-bajo")
     public List<ProductoDTO> stockBajo() {
@@ -75,5 +88,27 @@ public class ProductoController {
                 .header("Content-Disposition", "attachment; filename=" + nombreArchivo)
                 .header("Content-Type", "text/csv; charset=UTF-8")
                 .body(contenido);
+    }
+
+    @Operation(summary = "Exportar productos a Excel", description = "Descarga archivo XLSX con todos los productos")
+    @GetMapping("/exportar/excel")
+    public ResponseEntity<byte[]> exportarExcel() {
+
+        byte[] excel = service.exportarExcel();
+
+        String fecha = LocalDate.now()
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        String nombreArchivo = "productos-" + fecha + ".xlsx";
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=" + nombreArchivo)
+                .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .body(excel);
+    }
+
+    @GetMapping("/stats")
+    public ProductoStatsDTO stats() {
+        return service.obtenerStats();
     }
 }

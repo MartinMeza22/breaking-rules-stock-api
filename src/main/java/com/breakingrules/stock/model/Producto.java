@@ -17,14 +17,15 @@ public class Producto {
 
     private String nombre;
     private String categoria;
-    private String talle;
+    @Enumerated(EnumType.STRING)
+    private Talle talle;
     private String color;
     private BigDecimal precio;
     private Integer stock;
 
     public Producto(){ }
 
-    public Producto(Integer id, String nombre, String categoria, String talle, String color, BigDecimal precio, Integer stock) {
+    public Producto(Integer id, String nombre, String categoria, Talle talle, String color, BigDecimal precio, Integer stock) {
         this.id = id;
         this.nombre = nombre;
         this.categoria = categoria;
