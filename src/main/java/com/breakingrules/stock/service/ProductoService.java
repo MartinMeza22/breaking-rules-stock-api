@@ -12,6 +12,7 @@ import java.util.List;
 public class ProductoService {
 
     private final ProductoRepository repository;
+    private static final int STOCK_BAJO_LIMITE = 5;
 
     public ProductoService(ProductoRepository repository) {
         this.repository = repository;
@@ -70,6 +71,46 @@ public class ProductoService {
         if (producto.getStock() < 0) {
             throw new IllegalArgumentException("El stock no puede ser negativo");
         }
+    }
+
+    public List<ProductoDTO> buscarPorNombre(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            throw new IllegalArgumentException("El nombre no puede estar vacío");
+        }
+
+        return repository.findByNombreContainingIgnoreCase(nombre)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+        public List<ProductoDTO> obtenerStockBajo() {
+            return repository.findByStockGreaterThan(STOCK_BAJO_LIMITE)
+                    .stream()
+                    .map(this::toDTO)
+                    .toList();
+        }
+
+    public String exportarCSV() {
+        List<Producto> productos = repository.findAll();
+
+        StringBuilder csv = new StringBuilder();
+
+        // Cabecera
+        csv.append("ID,Nombre,Categoria,Talle,Color,Precio,Stock\n");
+
+        // Filas
+        for (Producto p : productos) {
+            csv.append(p.getId()).append(",")
+                    .append(p.getNombre()).append(",")
+                    .append(p.getCategoria()).append(",")
+                    .append(p.getTalle()).append(",")
+                    .append(p.getColor()).append(",")
+                    .append(p.getPrecio()).append(",")
+                    .append(p.getStock()).append("\n");
+        }
+
+        return csv.toString();
     }
 
     private ProductoDTO toDTO(Producto p) {

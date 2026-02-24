@@ -1,10 +1,13 @@
 package com.breakingrules.stock.controller;
 
+import com.breakingrules.stock.dto.ProductoDTO;
 import com.breakingrules.stock.model.Producto;
 import com.breakingrules.stock.service.ProductoService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/web/productos")
@@ -34,4 +37,5 @@ public class ProductoWebController {
         service.eliminar(id);
         return "redirect:/web/productos";
     }
+
 }

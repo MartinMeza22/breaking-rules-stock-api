@@ -1,10 +1,10 @@
-package com.brakingrules.stock;
+package com.breakingrules.stock;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BrakingrulesStockApplicationTests {
+class BreakingrulesStockApplicationTests {
 
 	@Test
 	void contextLoads() {
