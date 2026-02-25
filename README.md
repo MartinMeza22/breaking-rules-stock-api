@@ -10,7 +10,7 @@ Proyecto orientado a practicar buenas prácticas de backend con arquitectura en 
 - Spring Boot 3
 - Spring Web
 - Spring Data JPA
-- H2 Database (entorno local)
+- PostgreSQL
 - Maven
 - Lombok
 - OpenAPI / Swagger
@@ -28,12 +28,13 @@ Proyecto orientado a practicar buenas prácticas de backend con arquitectura en 
 - Alerta de stock bajo configurable
 - Exportación de productos a CSV
 - Documentación interactiva con Swagger
-- Consola H2 para testing
+- Logging para trazabilidad y debugging
 
-- Arquitectura en capas:
+- Arquitectura:
   - Controller
   - Service
   - Repository
+  - DTO
 
 ---
 
@@ -41,10 +42,30 @@ Proyecto orientado a practicar buenas prácticas de backend con arquitectura en 
 - Inyección de dependencias
 - Separación de responsabilidades
 - API RESTful
+- JPA / Hibernate
 - Manejo de entidades JPA
 - Validaciones de negocio
 - Testing unitario
 - Documentación de API con OpenAPI
+- Migración de base en memoria a persistente
+
+---
+
+## Base de Datos
+
+El proyecto utiliza PostgreSQL como base de datos principal.
+
+Configuración por defecto:
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/breaking_rules_db
+
+spring.datasource.username=breaking_rules
+
+spring.datasource.password=1234
+
+La creación de tablas se realiza automáticamente mediante:
+
+- spring.jpa.hibernate.ddl-auto=update
 
 ---
 
@@ -53,6 +74,28 @@ Proyecto orientado a practicar buenas prácticas de backend con arquitectura en 
 ```bash
 git clone https://github.com/MartinMeza22/breaking-rules-stock.git
 cd breaking-rules-stock
+mvn spring-boot:run
+```
+---
+
+Configurar PostgreSQL
+
+```bash
+CREATE DATABASE breaking_rules_stock;
+```
+
+Editar application.properties:
+
+```bash
+spring.datasource.url=jdbc:postgresql://localhost:5432/breaking_rules_stock
+spring.datasource.username=tu_usuario
+spring.datasource.password=tu_password
+```
+---
+
+Ejecutar
+
+```bash
 mvn spring-boot:run
 ```
 
