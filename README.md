@@ -69,6 +69,12 @@ La creación de tablas se realiza automáticamente mediante:
 
 ---
 
+## Estado del proyecto
+✔ Sistema de stock funcional (v1 estable)  
+ - En evolución hacia sistema comercial completo
+
+---
+
 ## ▶️ ¿Cómo ejecutar el proyecto?
 
 ```bash
