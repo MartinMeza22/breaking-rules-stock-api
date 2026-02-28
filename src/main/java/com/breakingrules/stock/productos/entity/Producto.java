@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import jakarta.validation.constraints.*;
 
 @Entity
 @Table(
@@ -27,28 +28,41 @@ public class Producto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank(message = "El SKU es obligatorio")
     @Column(unique = true, length = 100)
     private String sku;
 
+    @NotBlank(message = "El nombre es obligatorio")
     @Column(nullable = false)
     private String nombre;
 
+    @NotBlank(message = "La categoria es obligatoria")
     private String categoria;
 
+    @NotNull(message = "El talle es obligatorio")
     @Enumerated(EnumType.STRING)
     private Talle talle;
 
+    @NotBlank(message = "El color es obligatoria")
+    @NotNull(message = "El color es obligatorio")
     private String color;
 
+    @NotBlank(message = "El código de barras es obligatorio")
     @Column(name = "codigo_barras", unique = true, length = 50)
     private String codigoBarras;
 
+
+    @Positive(message = "El costo debe ser mayor a 0")
     @Column(precision = 15, scale = 2)
     private BigDecimal costo;
+
+    @NotNull(message = "El precio de venta es obligatorio")
 
     @Column(name = "precio_venta", nullable = false, precision = 15, scale = 2)
     private BigDecimal precioVenta;
 
+    @NotNull(message = "El stock es obligatorio")
+    @Min(value = 0, message = "El stock no puede ser negativo")
     @Column(nullable = false)
     private Integer stock;
 

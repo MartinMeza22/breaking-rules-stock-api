@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Editar proveedor</title>
+    <style>
+        body { background:#0f172a; color:white; font-family:Inter, sans-serif; padding:40px; }
+        .card { max-width:500px; margin:auto; background:#1e293b; padding:20px; border-radius:12px; }
+        input, select { width:100%; padding:10px; margin-bottom:10px; background:#020617; border:1px solid #334155; border-radius:6px; color:white; }
+        button { background:white; border:none; padding:10px; border-radius:6px; font-weight:bold; }
+        a { color:#9ca3af; display:block; margin-top:10px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h3>✏️ Editar proveedor</h3>
+    <form th:action="@{/web/proveedores/actualizar/{id}(id=${proveedor.id})}" th:object="${proveedor}" method="post">
+        <input type="hidden" th:field="*{id}"/>
+        <input type="text" th:field="*{nombre}" placeholder="Nombre"/>
+        <input type="text" th:field="*{cuit}" placeholder="CUIT"/>
+        <input type="text" th:field="*{email}" placeholder="Email"/>
+        <input type="text" th:field="*{telefono}" placeholder="Teléfono"/>
+        <input type="text" th:field="*{direccion}" placeholder="Dirección"/>
+        <input type="checkbox" th:field="*{activo}"/> Activo
+        <button type="submit">Guardar cambios</button>
+    </form>
+    <a th:href="@{/web/proveedores}">← Volver</a>
+</div>
+
+</body>
+</html>

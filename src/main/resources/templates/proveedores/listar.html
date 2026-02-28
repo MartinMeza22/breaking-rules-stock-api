@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Breaking Rules Stock - Proveedores</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #e5e7eb;
+            --accent: #9ca3af;
+            --border: #334155;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        body { margin:0; font-family: Inter, system-ui, sans-serif; background: var(--bg); color: var(--primary); }
+        header { display:flex; align-items:center; gap:12px; padding:18px 28px; border-bottom:1px solid var(--border); background:#020617; }
+        header img { height:42px; }
+        .container { max-width:1000px; margin:40px auto; padding:0 20px; }
+        .card { background: var(--card); border-radius:14px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,.35); border:1px solid var(--border); margin-bottom:20px; }
+        input, select { width:100%; padding:10px; margin-bottom:10px; background:#020617; border:1px solid var(--border); border-radius:8px; color:white; }
+        button { background:white; border:none; padding:10px 14px; border-radius:8px; font-weight:600; cursor:pointer; }
+        table { width:100%; border-collapse:collapse; margin-top:16px; }
+        th, td { padding:10px; border-bottom:1px solid var(--border); }
+        th { font-size:.8rem; text-transform:uppercase; color:var(--accent); }
+        .actions a { margin-right:8px; font-size:.85rem; color:var(--accent); text-decoration:none; }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="/logo-br.jpeg" alt="logo">
+    <h2>Breaking Rules Stock</h2>
+</header>
+
+<div class="container">
+
+    <!-- CREAR PROVEEDOR -->
+    <div class="card">
+        <h3>➕ Nuevo proveedor</h3>
+        <form th:action="@{/web/proveedores/guardar}" th:object="${proveedorNuevo}" method="post">
+            <input type="text" th:field="*{nombre}" placeholder="Nombre" class="form-control"/>
+            <input type="text" th:field="*{cuit}" placeholder="CUIT" class="form-control"/>
+            <input type="text" th:field="*{email}" placeholder="Email" class="form-control"/>
+            <input type="text" th:field="*{telefono}" placeholder="Teléfono" class="form-control"/>
+            <input type="text" th:field="*{direccion}" placeholder="Dirección" class="form-control"/>
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+
+    <!-- LISTADO PROVEEDORES -->
+    <div class="card">
+        <h3>Proveedores</h3>
+        <table th:if="${!proveedores.isEmpty()}">
+            <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>CUIT</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+                <th>Activo</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="p : ${proveedores}">
+                <td th:text="${p.nombre}"></td>
+                <td th:text="${p.cuit}"></td>
+                <td th:text="${p.email}"></td>
+                <td th:text="${p.telefono}"></td>
+                <td th:text="${p.direccion}"></td>
+                <td th:text="${p.activo}"></td>
+                <td class="actions">
+                    <a th:href="@{'/web/proveedores/editar/' + ${p.id}}">Editar</a>
+                    <a th:href="@{'/web/proveedores/eliminar/' + ${p.id}}">Eliminar</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div th:if="${proveedores.isEmpty()}">No hay proveedores cargados.</div>
+    </div>
+
+</div>
+
+</body>
+</html>

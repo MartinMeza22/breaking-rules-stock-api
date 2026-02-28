@@ -4,12 +4,15 @@ import com.breakingrules.stock.productos.dto.ProductoDTO;
 import com.breakingrules.stock.productos.dto.ProductoStatsDTO;
 import com.breakingrules.stock.productos.entity.Producto;
 import com.breakingrules.stock.productos.entity.Talle;
-import com.breakingrules.stock.productos.service.ProductoService;
+import com.breakingrules.stock.productos.service.ProductoServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
@@ -17,15 +20,16 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Tag(name = "Productos", description = "Operaciones relacionadas a productos de indumentaria")
 @RestController
-@RequestMapping("/productos")
+@RequestMapping("/api/productos")
 public class ProductoController {
 
-    private final ProductoService service;
+    private final ProductoServiceImpl service;
 
-    public ProductoController(ProductoService service) {
+    public ProductoController(ProductoServiceImpl service) {
         this.service = service;
     }
 
@@ -38,16 +42,30 @@ public class ProductoController {
         return service.listarPaginado(page, size);
     }
 
-    @Operation(summary = "Crear producto")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Producto creado correctamente"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos")
-    })
-    @PostMapping
-    public Producto guardar(@RequestBody Producto producto) {
-        return service.guardar(producto);
-    }
-
+//    @Operation(summary = "Crear producto")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Producto creado correctamente"),
+//            @ApiResponse(responseCode = "400", description = "Datos inválidos")
+//    })
+//
+//    @PostMapping("/guardar")
+//    public String guardar(@Valid @ModelAttribute("producto") Producto producto,
+//                          BindingResult result,
+//                          RedirectAttributes redirectAttributes) {
+//
+//        if (result.hasErrors()) {
+//            return "productos";
+//        }
+//
+//        try {
+//            service.guardar(producto);
+//            redirectAttributes.addFlashAttribute("success", "Producto guardado correctamente");
+//        } catch (DataIntegrityViolationException e) {
+//            redirectAttributes.addFlashAttribute("error", "SKU o Código de barras duplicado");
+//        }
+//
+//        return "redirect:/web/productos";
+//    }
     @Operation(summary = "Buscar productos por nombre", description = "Filtra productos que contengan el texto indicado en el nombre")
     @GetMapping("/buscar")
     public Page<ProductoDTO> buscar(
@@ -89,22 +107,22 @@ public class ProductoController {
                 .body(contenido);
     }
 
-    @Operation(summary = "Exportar productos a Excel", description = "Descarga archivo XLSX con todos los productos")
-    @GetMapping("/exportar/excel")
-    public ResponseEntity<byte[]> exportarExcel() {
-
-        byte[] excel = service.exportarExcel();
-
-        String fecha = LocalDate.now()
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-
-        String nombreArchivo = "productos-" + fecha + ".xlsx";
-
-        return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=" + nombreArchivo)
-                .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                .body(excel);
-    }
+//    @Operation(summary = "Exportar productos a Excel", description = "Descarga archivo XLSX con todos los productos")
+//    @GetMapping("/exportar/excel")
+//    public ResponseEntity<byte[]> exportarExcel() {
+//
+//        byte[] excel = service.exportarExcel();
+//
+//        String fecha = LocalDate.now()
+//                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+//
+//        String nombreArchivo = "productos-" + fecha + ".xlsx";
+//
+//        return ResponseEntity.ok()
+//                .header("Content-Disposition", "attachment; filename=" + nombreArchivo)
+//                .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+//                .body(excel);
+//    }
 
     @GetMapping("/stats")
     public ProductoStatsDTO stats() {
