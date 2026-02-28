@@ -22,13 +22,13 @@ public class ProductoDTO {
     private Integer stockMinimo;
 
     private Boolean activo;
-
+    private String proveedorNombre;
     public ProductoDTO() {}
 
     public ProductoDTO(Integer id, String sku, String nombre, String categoria, Talle talle,
                        String color, String codigoBarras,
                        BigDecimal costo, BigDecimal precioVenta,
-                       Integer stock, Integer stockMinimo, Boolean activo) {
+                       Integer stock, Integer stockMinimo, Boolean activo, String proveedorNombre) {
         this.id = id;
         this.sku = sku;
         this.nombre = nombre;
@@ -41,6 +41,7 @@ public class ProductoDTO {
         this.stock = stock;
         this.stockMinimo = stockMinimo;
         this.activo = activo;
+        this.proveedorNombre = proveedorNombre;
     }
 
     public Integer getId() {
@@ -137,5 +138,13 @@ public class ProductoDTO {
 
     public void setActivo(Boolean activo) {
         this.activo = activo;
+    }
+
+    public String getProveedorNombre() {
+        return proveedorNombre;
+    }
+
+    public void setProveedorNombre(String proveedorNombre) {
+        this.proveedorNombre = proveedorNombre;
     }
 }

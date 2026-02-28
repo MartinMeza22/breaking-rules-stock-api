@@ -322,7 +322,8 @@ public class ProductoServiceImpl implements ProductoService {
                 p.getPrecioVenta(),
                 p.getStock(),
                 p.getStockMinimo(),
-                p.getActivo()
+                p.getActivo(),
+                p.getProveedor().getNombre()
         );
     }
 

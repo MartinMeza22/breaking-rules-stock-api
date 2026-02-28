@@ -2,7 +2,9 @@ package com.breakingrules.stock.productos.controller;
 
 import com.breakingrules.stock.productos.entity.Producto;
 import com.breakingrules.stock.productos.entity.Talle;
+import com.breakingrules.stock.productos.service.ProductoService;
 import com.breakingrules.stock.productos.service.ProductoServiceImpl;
+import com.breakingrules.stock.proveedores.service.ProveedorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -15,25 +17,36 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ProductoWebController {
 
-    private final ProductoServiceImpl service;
+    private final ProductoService service;
+    private final ProveedorService proveedorService;
 
     @GetMapping
     public String listar(Model model) {
         model.addAttribute("productos", service.listarTodosSinPaginacion());
         model.addAttribute("productoNuevo", new Producto());
         model.addAttribute("talles", Talle.values());
+        model.addAttribute("proveedores", proveedorService.listarTodos());
         return "productos/listar";
     }
 
     @PostMapping("/guardar")
-    public String guardar(@Valid @ModelAttribute("productoNuevo") Producto producto,
+    public String guardar(@Valid @ModelAttribute Producto producto,
                           BindingResult result,
                           Model model) {
 
+        System.out.println("ENTRÓ A GUARDAR");
+
         if (result.hasErrors()) {
+            System.out.println("TIENE ERRORES");
+            result.getAllErrors().forEach(error ->
+                    System.out.println(error.toString())
+            );
             model.addAttribute("productos", service.listarTodosSinPaginacion());
+            model.addAttribute("proveedores", proveedorService.listarTodos());
+            model.addAttribute("productoNuevo", producto);
             model.addAttribute("talles", Talle.values());
-            return "productos/listar"; // vuelve al form con errores
+
+            return "productos/listar";
         }
 
         service.guardar(producto);
@@ -62,8 +75,8 @@ public class ProductoWebController {
         Producto existente = service.obtenerEntidadPorId(id);
 
         existente.setNombre(producto.getNombre());
-        existente.setSku(existente.getSku());
-        existente.setCodigoBarras(existente.getCodigoBarras());
+        existente.setSku(producto.getSku());
+        existente.setCodigoBarras(producto.getCodigoBarras());
         existente.setPrecioVenta(producto.getPrecioVenta());
         existente.setStock(producto.getStock());
         existente.setCategoria(producto.getCategoria());

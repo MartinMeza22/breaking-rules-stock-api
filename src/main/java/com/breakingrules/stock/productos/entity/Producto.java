@@ -1,5 +1,6 @@
 package com.breakingrules.stock.productos.entity;
 
+import com.breakingrules.stock.proveedores.entity.Proveedor;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -46,8 +47,7 @@ public class Producto {
     @NotNull(message = "El color es obligatorio")
     private String color;
 
-    @NotBlank(message = "El código de barras es obligatorio")
-    @Column(name = "codigo_barras", unique = true, length = 50)
+    @Column(nullable = false, name = "codigo_barras", unique = true, length = 50)
     private String codigoBarras;
 
 
@@ -70,4 +70,8 @@ public class Producto {
 
     @Column(nullable = false)
     private Boolean activo = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proveedor_id")
+    private Proveedor proveedor;
 }
