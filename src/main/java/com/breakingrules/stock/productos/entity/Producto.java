@@ -43,7 +43,6 @@ public class Producto {
     @Enumerated(EnumType.STRING)
     private Talle talle;
 
-    @NotBlank(message = "El color es obligatoria")
     @NotNull(message = "El color es obligatorio")
     private String color;
 

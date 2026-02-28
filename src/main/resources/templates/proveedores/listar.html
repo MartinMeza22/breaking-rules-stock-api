@@ -38,20 +38,23 @@
 
 <div class="container">
 
-    <!-- CREAR PROVEEDOR -->
     <div class="card">
         <h3>➕ Nuevo proveedor</h3>
         <form th:action="@{/web/proveedores/guardar}" th:object="${proveedorNuevo}" method="post">
             <input type="text" th:field="*{nombre}" placeholder="Nombre" class="form-control"/>
+            <div class="text-danger" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
             <input type="text" th:field="*{cuit}" placeholder="CUIT" class="form-control"/>
+            <div class="text-danger" th:if="${#fields.hasErrors('cuit')}" th:errors="*{cuit}"></div>
             <input type="text" th:field="*{email}" placeholder="Email" class="form-control"/>
+            <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
             <input type="text" th:field="*{telefono}" placeholder="Teléfono" class="form-control"/>
+            <div class="text-danger" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></div>
             <input type="text" th:field="*{direccion}" placeholder="Dirección" class="form-control"/>
+            <div class="text-danger" th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}"></div>
             <button type="submit">Guardar</button>
         </form>
     </div>
 
-    <!-- LISTADO PROVEEDORES -->
     <div class="card">
         <h3>Proveedores</h3>
         <table th:if="${!proveedores.isEmpty()}">

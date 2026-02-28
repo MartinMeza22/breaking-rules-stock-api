@@ -42,30 +42,6 @@ public class ProductoController {
         return service.listarPaginado(page, size);
     }
 
-//    @Operation(summary = "Crear producto")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "Producto creado correctamente"),
-//            @ApiResponse(responseCode = "400", description = "Datos inválidos")
-//    })
-//
-//    @PostMapping("/guardar")
-//    public String guardar(@Valid @ModelAttribute("producto") Producto producto,
-//                          BindingResult result,
-//                          RedirectAttributes redirectAttributes) {
-//
-//        if (result.hasErrors()) {
-//            return "productos";
-//        }
-//
-//        try {
-//            service.guardar(producto);
-//            redirectAttributes.addFlashAttribute("success", "Producto guardado correctamente");
-//        } catch (DataIntegrityViolationException e) {
-//            redirectAttributes.addFlashAttribute("error", "SKU o Código de barras duplicado");
-//        }
-//
-//        return "redirect:/web/productos";
-//    }
     @Operation(summary = "Buscar productos por nombre", description = "Filtra productos que contengan el texto indicado en el nombre")
     @GetMapping("/buscar")
     public Page<ProductoDTO> buscar(

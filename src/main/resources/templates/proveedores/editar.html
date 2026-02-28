@@ -13,15 +13,20 @@
 <body>
 
 <div class="card">
-    <h3>✏️ Editar proveedor</h3>
+    <h3>Editar proveedor</h3>
     <form th:action="@{/web/proveedores/actualizar/{id}(id=${proveedor.id})}" th:object="${proveedor}" method="post">
         <input type="hidden" th:field="*{id}"/>
         <input type="text" th:field="*{nombre}" placeholder="Nombre"/>
+        <div class="text-danger" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
         <input type="text" th:field="*{cuit}" placeholder="CUIT"/>
+        <div class="text-danger" th:if="${#fields.hasErrors('cuit')}" th:errors="*{cuit}"></div>
         <input type="text" th:field="*{email}" placeholder="Email"/>
+        <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
         <input type="text" th:field="*{telefono}" placeholder="Teléfono"/>
+        <div class="text-danger" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></div>
         <input type="text" th:field="*{direccion}" placeholder="Dirección"/>
-        <input type="checkbox" th:field="*{activo}"/> Activo
+        <div class="text-danger" th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}"></div>
+
         <button type="submit">Guardar cambios</button>
     </form>
     <a th:href="@{/web/proveedores}">← Volver</a>

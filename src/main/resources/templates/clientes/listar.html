@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Breaking Rules Stock - Clientes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #e5e7eb;
+            --accent: #9ca3af;
+            --border: #334155;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 28px;
+            border-bottom: 1px solid var(--border);
+            background: #020617;
+        }
+
+        header img { height: 42px; }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.35);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #020617;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+        }
+
+        button {
+            background: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-size: .8rem;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .badge {
+            background: rgba(34,197,94,.2);
+            color: var(--success);
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-size: .7rem;
+        }
+
+        .badge.inactivo {
+            background: rgba(239,68,68,.2);
+            color: var(--danger);
+        }
+
+        .actions a {
+            margin-right: 8px;
+            font-size: .85rem;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .text-danger {
+            color: var(--danger);
+            font-size: .8rem;
+            margin-bottom: 8px;
+        }
+
+        footer {
+            text-align: center;
+            color: var(--accent);
+            font-size: .8rem;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <img th:src="@{/logo-br.jpeg}" alt="Logo Breaking Rules">
+    <h2>Breaking Rules Stock</h2>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <h3>➕ Nuevo Cliente</h3>
+
+        <form th:action="@{/web/clientes/guardar}" th:object="${clienteNuevo}" method="post">
+            <input type="text" th:field="*{nombre}" placeholder="Nombre"/>
+            <div class="text-danger" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
+            <input type="text" th:field="*{apellido}" placeholder="Apellido"/>
+            <div class="text-danger" th:if="${#fields.hasErrors('apellido')}" th:errors="*{apellido}"></div>
+            <input type="text" th:field="*{documento}" placeholder="DNI o CUIT"/>
+            <div class="text-danger" th:if="${#fields.hasErrors('documento')}" th:errors="*{documento}"></div>
+            <input type="text" th:field="*{cuil}" placeholder="CUIL (opcional)"/>
+            <input type="email" th:field="*{email}" placeholder="Email"/>
+            <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+            <input type="text" th:field="*{telefono}" placeholder="Teléfono"/>
+            <div class="text-danger" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></div>
+            <input type="text" th:field="*{direccion}" placeholder="Dirección"/>
+            <div class="text-danger" th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}"></div>
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Clientes</h3>
+
+        <table th:if="${!clientes.isEmpty()}">
+            <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Documento</th>
+                <th>CUIL</th>
+                <th>Email</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="c : ${clientes}">
+                <td th:text="${c.nombre + ' ' + c.apellido}"></td>
+                <td th:text="${c.documento}"></td>
+                <td th:text="${#strings.isEmpty(c.cuil) ? '-' : c.cuil}"></td>
+                <td th:text="${c.email}"></td>
+                <td>
+                    <span th:if="${c.activo}" class="badge">Activo</span>
+                    <span th:if="${!c.activo}" class="badge inactivo">Inactivo</span>
+                </td>
+                <td class="actions">
+                    <a th:href="@{'/web/clientes/editar/' + ${c.id}}">Editar</a>
+                    <a th:href="@{'/web/clientes/eliminar/' + ${c.id}}"
+                       onclick="return confirm('¿Seguro que querés eliminar este cliente?');">
+                        Eliminar
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div th:if="${clientes.isEmpty()}">
+            No hay clientes cargados.
+        </div>
+    </div>
+
+    <footer>© 2026 Breaking Rules — Sistema de Gestión</footer>
+</div>
+
+</body>
+</html>

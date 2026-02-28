@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Cliente</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="background:#0f172a; color:white; font-family:Inter, sans-serif;">
+
+<div style="max-width:600px; margin:60px auto; background:#1e293b; padding:30px; border-radius:14px; border:1px solid #334155;">
+
+    <h2>✏ Editar Cliente</h2>
+
+    <form th:action="@{/web/clientes/actualizar/{id}(id=${cliente.id})}"
+          th:object="${cliente}"
+          method="post">
+
+        <input type="text" th:field="*{nombre}" placeholder="Nombre"/>
+        <div style="color:#ef4444;" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
+
+        <input type="text" th:field="*{apellido}" placeholder="Apellido"/>
+        <div style="color:#ef4444;" th:if="${#fields.hasErrors('apellido')}" th:errors="*{apellido}"></div>
+
+        <input type="text" th:field="*{documento}" placeholder="DNI o CUIT"/>
+        <div style="color:#ef4444;" th:if="${#fields.hasErrors('documento')}" th:errors="*{documento}"></div>
+
+        <input type="email" th:field="*{email}" placeholder="Email"/>
+        <div style="color:#ef4444;" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+
+        <input type="text" th:field="*{telefono}" placeholder="Teléfono"/>
+        <div style="color:#ef4444;" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></div>
+
+        <input type="text" th:field="*{direccion}" placeholder="Dirección"/>
+        <div style="color:#ef4444;" th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}"></div>
+
+        <div style="margin-top:10px;">
+            <label>
+                <input type="checkbox" th:field="*{activo}"/> Activo
+            </label>
+        </div>
+
+        <br>
+        <button type="submit">Actualizar</button>
+        <a th:href="@{/web/clientes}" style="color:#9ca3af; margin-left:10px;">Cancelar</a>
+    </form>
+
+</div>
+
+</body>
+</html>

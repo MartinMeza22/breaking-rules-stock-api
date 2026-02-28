@@ -1,44 +1,38 @@
 package com.breakingrules.stock.proveedores.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
-import java.math.BigDecimal;
-
+@Entity
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "proveedores")
+@Builder
 public class Proveedor {
-    //Crear Proveedor (id, nombre, cuit, email, telefono, direccion, activo)
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Integer id;
 
-        @NotBlank(message = "El nombre es obligatorio")
-        @Column(nullable = false)
-        private String nombre;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-        @NotBlank(message = "El CUIT es obligatorio")
-        @Column(nullable = false, unique = true)
-        private String cuit;
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(max = 100, message = "El nombre no puede superar los 100 caracteres")
+    private String nombre;
 
-        @NotNull(message = "El email es obligatorio")
-        private String email;
+    @NotBlank(message = "El CUIT es obligatorio")
+    @Pattern(regexp = "\\d{11}", message = "El CUIT debe tener 11 dígitos numéricos")
+    private String cuit;
 
-        @NotNull(message = "El telefono es obligatorio")
-        private String telefono;
+    @Email(message = "Email inválido")
+    @Size(max = 150, message = "El email no puede superar los 150 caracteres")
+    private String email;
 
-        @NotNull(message = "La dirección es obligatoria")
-        private String direccion;
+    @Pattern(regexp = "\\d{6,15}", message = "Teléfono inválido")
+    private String telefono;
 
-        @Column(nullable = false)
-        private Boolean activo = true;
+    @Size(max = 200, message = "La dirección no puede superar los 200 caracteres")
+    private String direccion;
+
+    private Boolean activo = true;
 }

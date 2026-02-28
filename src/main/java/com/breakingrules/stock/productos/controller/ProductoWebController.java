@@ -69,7 +69,7 @@ public class ProductoWebController {
         existente.setCategoria(producto.getCategoria());
         existente.setColor(producto.getColor());
 
-        service.actualizar(existente);
+        service.guardar(existente);
 
         return "redirect:/web/productos";
     }
