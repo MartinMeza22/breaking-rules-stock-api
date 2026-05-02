@@ -43,6 +43,9 @@ public class VarianteProducto {
     @Column(name = "codigo_barras", unique = true, nullable = false)
     private String codigoBarras;
 
+    @Column(name = "codigo_barras_real", unique = true)
+    private String codigoBarrasReal;
+
     private Integer stock;
 
 
@@ -156,6 +159,16 @@ public class VarianteProducto {
 
             default:
                 return false;
+        }
+    }
+
+    public void generarCodigoBarras() {
+        if (this.producto != null && this.producto.getSku() != null
+                && this.color != null && this.talle != null) {
+
+            this.codigoBarrasReal = this.producto.getSku() + "-" +
+                    this.color.name() + "-" +
+                    this.talle.name();
         }
     }
 }

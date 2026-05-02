@@ -9,6 +9,7 @@ import com.breakingrules.stock.venta.entity.VentaDetalle;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface VentaService {
@@ -32,4 +33,10 @@ public interface VentaService {
     void anularVenta(Integer ventaId);
 
     void cancelarSiEstaVacia(Integer ventaId);
+
+    Map<String, Object> agregarProductoPorCodigo(Integer ventaId, String codigoBarras);
+
+    void actualizarCantidad(Integer detalleId, Integer cantidad);
+
+    Map<String, Object> buscarProductoPorCodigo(Integer ventaId, String codigo);
 }

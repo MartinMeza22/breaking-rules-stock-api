@@ -100,10 +100,14 @@ public class Producto {
 
     @PrePersist
     @PreUpdate
-    public void syncNombre() {
+    public void syncNombreYVariantes() {
+        // Tu lógica de nombre que ya tenías
         if (nombre == null || nombre.isBlank()) {
             nombre = sku;
         }
-    }
 
+        if (variantes != null) {
+            variantes.forEach(v -> v.generarCodigoBarras());
+        }
+    }
 }

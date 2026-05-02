@@ -105,7 +105,9 @@ public class ProductoWebController {
         existente.setPrecioEspecial2Mayorista(producto.getPrecioEspecial2Mayorista());
         existente.setPrecioEspecial3Publico(producto.getPrecioEspecial3Publico());
         existente.setPrecioEspecial3Mayorista(producto.getPrecioEspecial3Mayorista());
-
+        if (existente.getVariantes() != null) {
+            existente.getVariantes().forEach(v -> v.generarCodigoBarras());
+        }
         if (proveedorId != null) {
             existente.setProveedor(proveedorService.obtenerPorId(proveedorId));
         } else {

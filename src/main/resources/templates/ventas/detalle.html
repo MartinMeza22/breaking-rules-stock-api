@@ -22,6 +22,8 @@
     <div class="card">
         <h3>➕ Agregar Producto</h3>
 
+        <input type="text" id="scanner" placeholder="Escanear código..." />
+
         <form th:action="@{/web/ventas/agregar-producto}" method="post" id="formAgregarProducto">
 
             <input type="hidden" name="ventaId" th:value="${venta.id}"/>
@@ -47,6 +49,7 @@
 
             </div>
 
+            <label>Cantidad</label>
             <input type="number"
                    name="cantidad"
                    id="cantidad"
@@ -60,7 +63,7 @@
             </button>
         </form>
 
-        <div class="card">
+        <div class="card venta-detalles">
             <h3>Productos en la venta</h3>
 
             <table th:if="${!detalles.isEmpty()}">
@@ -77,7 +80,19 @@
                 <tbody>
                 <tr th:each="d : ${detalles}">
                     <td th:text="${d.variante.producto.nombre + ' ' + d.variante.color + ' ' + d.variante.talle}"></td>
-                    <td th:text="${d.cantidad}"></td>
+                    <td>
+                        <form th:action="@{/web/ventas/actualizar-cantidad}" method="post" style="display:flex; gap:5px;">
+                            <input type="hidden" name="ventaId" th:value="${venta.id}" />
+                            <input type="hidden" name="detalleId" th:value="${d.id}" />
+
+                            <input type="number" name="cantidad"
+                                   th:value="${d.cantidad}"
+                                   min="1"
+                                   style="width:60px;" />
+
+                            <button type="submit">✔</button>
+                        </form>
+                    </td>
                     <td th:text="${d.precioUnitario}"></td>
                     <td th:text="${d.subtotal}"></td>
 
@@ -129,79 +144,144 @@
     <script th:inline="javascript">
         document.addEventListener("DOMContentLoaded", function(){
 
-            const buscar = document.getElementById("buscarProducto");
             const select = document.getElementById("varianteSelect");
-
             const cantidadInput = document.getElementById("cantidad");
             const form = document.getElementById("formAgregarProducto");
 
-            const errorVariante = document.getElementById("errorVariante");
-            const errorCantidad = document.getElementById("errorCantidad");
+            const ventaId = /*[[${venta.id}]]*/ 0;
+
+
+            // DESCUENTO EN TIEMPO REAL (fix . y ,)
 
             const descuentoInput = document.getElementById("descuento");
             const totalOriginalEl = document.getElementById("totalOriginal");
-            const totalConDescuento = document.getElementById("totalConDescuento");
+            const totalConDescuentoEl = document.getElementById("totalConDescuento");
 
-            const ventaId = /*[[${venta.id}]]*/ 0;
+            if (descuentoInput && totalOriginalEl && totalConDescuentoEl) {
 
-            buscar.addEventListener("input", function(){
-                const filtro = buscar.value.toLowerCase();
+                const raw = totalOriginalEl.innerText.trim();
 
-                Array.from(select.options).forEach(option => {
-                    const texto = option.text.toLowerCase();
+                let totalOriginal;
 
-                    if (!option.value) return;
+                if (raw.includes(",") && raw.includes(".")) {
+                    // formato: 1.234,56
+                    totalOriginal = parseFloat(
+                        raw.replace(/\./g, "").replace(",", ".")
+                    );
+                } else if (raw.includes(",")) {
+                    // formato: 1234,56
+                    totalOriginal = parseFloat(
+                        raw.replace(",", ".")
+                    );
+                } else {
+                    // formato: 1234.56 (EL TUYO)
+                    totalOriginal = parseFloat(raw);
+                }
 
-                    option.style.display = texto.includes(filtro) ? "block" : "none";
-                });
-            });
+                totalOriginal = totalOriginal || 0;
 
-            if (totalOriginalEl && descuentoInput) {
-                const totalOriginal = parseFloat(totalOriginalEl.innerText);
+                totalConDescuentoEl.innerText = totalOriginal.toFixed(2);
 
                 descuentoInput.addEventListener("input", function(){
-                    let descuento = parseFloat(this.value) || 0;
-                    let totalFinal = totalOriginal - (totalOriginal * (descuento / 100));
-                    totalConDescuento.innerText = totalFinal.toFixed(2);
+
+                    let descuento = parseFloat(this.value.replace(",", ".")) || 0;
+
+                    if(descuento < 0) descuento = 0;
+                    if(descuento > 100) descuento = 100;
+
+                    const totalFinal = totalOriginal - (totalOriginal * (descuento / 100));
+
+                    totalConDescuentoEl.innerText = totalFinal.toFixed(2);
                 });
             }
 
-            form.addEventListener("submit", function(e){
-
-                let hayError = false;
-
-                errorVariante.innerText = "";
-                errorCantidad.innerText = "";
-
-                if(!select.value){
-                    errorVariante.innerText = "Seleccioná un producto";
-                    hayError = true;
-                }
-
-                if(!cantidadInput.value || cantidadInput.value <= 0){
-                    errorCantidad.innerText = "Ingresá una cantidad válida";
-                    hayError = true;
-                }
-
-                if(hayError){
+            // =========================
+            // ENTER EN CANTIDAD (manual)
+            // =========================
+            cantidadInput.addEventListener("keydown", function(e){
+                if(e.key === "Enter"){
                     e.preventDefault();
+                    form.requestSubmit();
                 }
             });
 
-            let ventaFinalizada = false;
+            // =========================
+            // SCANNER GLOBAL
+            // =========================
+            let buffer = "";
+            let lastKeyTime = Date.now();
 
-            document.querySelector(".btn-finalizar")?.addEventListener("click", function () {
-                ventaFinalizada = true;
-            });
+            document.addEventListener("keydown", function(e){
 
-            window.addEventListener("beforeunload", function () {
+    const tag = e.target.tagName;
 
-                const tieneProductos = document.querySelectorAll("tbody tr").length > 0;
+    if(tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA"){
+        return;
+    }
 
-                if (!tieneProductos && !ventaFinalizada) {
-                    navigator.sendBeacon("/web/ventas/cancelar?ventaId=" + ventaId);
+    const currentTime = Date.now();
+
+    if(currentTime - lastKeyTime > 200){
+        buffer = "";
+    }
+
+    lastKeyTime = currentTime;
+
+    if(e.key === "Enter"){
+
+        e.preventDefault();
+
+        if(buffer.length > 3){
+
+            fetch("/web/ventas/scan", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "ventaId=" + ventaId + "&codigo=" + buffer.trim()
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                if(data.id){
+
+                    if(data.existe){
+
+                        // 🔥 YA EXISTE → sumar automáticamente
+                        fetch("/web/ventas/agregar-producto", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
+                            body:
+                                "ventaId=" + ventaId +
+                                "&varianteId=" + data.id +
+                                "&cantidad=1"
+                        })
+                        .then(() => location.reload());
+
+                    } else {
+
+                        // 🔥 NO EXISTE → ir a cantidad
+                        select.value = data.id;
+                        cantidadInput.value = 1;
+                        cantidadInput.focus();
+                        cantidadInput.select();
+                    }
+
+                } else {
+                    alert("Código no encontrado");
                 }
+
             });
+        }
+
+        buffer = "";
+        return;
+    }
+
+    buffer += e.key;
+});
 
         });
     </script>
@@ -215,6 +295,31 @@
 
         #varianteSelect{
             width:100%;
+        }
+
+        .btn-accion{
+            margin-bottom:16px;
+        }
+
+        .venta-detalles table {
+            font-size: 18px;
+        }
+
+        .venta-detalles th {
+            font-size: 19px;
+        }
+
+        .venta-detalles td {
+            font-size: 18px;
+        }
+
+        .venta-detalles td {
+
+            padding: 12px;
+        }
+
+        .venta-detalles input {
+            font-size: 18px;
         }
     </style>
 

@@ -73,7 +73,9 @@ public class VarianteProductoServiceImpl implements VarianteProductoService {
 
         variante.setStock(stockInicial);
 
-        variante.setCodigoBarras(
+        variante.setCodigoBarras(generarCodigoNumerico());
+
+        variante.setCodigoBarrasReal(
                 generarCodigoBarras(producto.getSku(), color, talle)
         );
 
@@ -147,20 +149,18 @@ public class VarianteProductoServiceImpl implements VarianteProductoService {
             throw new RuntimeException("Precio mayorista inválido");
         }
 
-        String nuevoCodigo = generarCodigoBarras(
+        String codigoReal = generarCodigoBarras(
                 variante.getProducto().getSku(),
                 variante.getColor(),
                 variante.getTalle()
         );
 
-        boolean existeCodigo = varianteRepository
-                .existsByCodigoBarrasAndIdNot(nuevoCodigo, variante.getId());
-
-        if (existeCodigo) {
-            throw new RuntimeException("Ya existe una variante con ese código de barras");
+        // mantener código numérico existente
+        if (variante.getCodigoBarras() == null) {
+            variante.setCodigoBarras(generarCodigoNumerico());
         }
 
-        variante.setCodigoBarras(nuevoCodigo);
+        variante.setCodigoBarrasReal(codigoReal);
 
         varianteRepository.save(variante);
     }
@@ -211,5 +211,20 @@ public class VarianteProductoServiceImpl implements VarianteProductoService {
         return Arrays.stream(Talle.values())
                 .filter(t -> tipo == TipoTalle.NUMERICO ? t.esNumerico() : t.esAlfabetico())
                 .toList();
+    }
+
+    @Override
+    public VarianteProducto obtenerPorCodigo(String codigo) {
+
+        return varianteRepository.findByCodigoBarras(codigo) // 🔥 primero numérico
+                .orElseGet(() ->
+                        varianteRepository.findByCodigoBarrasReal(codigo)
+                                .orElseThrow(() -> new RuntimeException("No encontrado"))
+                );
+    }
+
+    private String generarCodigoNumerico() {
+        long cantidad = varianteRepository.count() + 1;
+        return String.format("%06d", cantidad); // 000001
     }
 }

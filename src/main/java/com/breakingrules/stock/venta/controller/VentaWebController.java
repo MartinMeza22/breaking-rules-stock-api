@@ -2,6 +2,7 @@ package com.breakingrules.stock.venta.controller;
 
 import com.breakingrules.stock.clientes.service.ClienteService;
 import com.breakingrules.stock.productos.entity.Producto;
+import com.breakingrules.stock.productos.entity.VarianteProducto;
 import com.breakingrules.stock.productos.service.VarianteProductoService;
 import com.breakingrules.stock.venta.entity.Venta;
 import com.breakingrules.stock.venta.entity.VentaDetalle;
@@ -67,22 +68,33 @@ public class VentaWebController {
     public String agregarProducto(
             @RequestParam Integer ventaId,
             @RequestParam(required = false) Integer varianteId,
+            @RequestParam(required = false) String codigo,
             @RequestParam(required = false) Integer cantidad,
             RedirectAttributes redirectAttributes
     ) {
 
-        if (varianteId == null) {
-            redirectAttributes.addFlashAttribute("error", "Seleccioná un producto");
-            return "redirect:/web/ventas/" + ventaId;
-        }
-
-        if (cantidad == null || cantidad <= 0) {
-            redirectAttributes.addFlashAttribute("error", "Ingresá una cantidad válida");
-            return "redirect:/web/ventas/" + ventaId;
-        }
-
         try {
+
+            //  SCANNER
+            if (codigo != null && !codigo.isBlank()) {
+
+                ventaService.agregarProductoPorCodigo(ventaId, codigo);
+                return "redirect:/web/ventas/" + ventaId;
+            }
+
+            //  MANUAL
+            if (varianteId == null) {
+                redirectAttributes.addFlashAttribute("error", "Seleccioná un producto");
+                return "redirect:/web/ventas/" + ventaId;
+            }
+
+            if (cantidad == null || cantidad <= 0) {
+                redirectAttributes.addFlashAttribute("error", "Ingresá una cantidad válida");
+                return "redirect:/web/ventas/" + ventaId;
+            }
+
             ventaService.agregarProducto(ventaId, varianteId, cantidad);
+
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "No se pudo agregar el producto");
         }
@@ -182,5 +194,27 @@ public class VentaWebController {
     @ResponseStatus(HttpStatus.OK) //
     public void cancelarVenta(@RequestParam Integer ventaId) {
         ventaService.cancelarSiEstaVacia(ventaId);
+    }
+
+
+    @PostMapping("/scan")
+    @ResponseBody
+    public Map<String, Object> scan(
+            @RequestParam Integer ventaId,
+            @RequestParam String codigo
+    ) {
+        return ventaService.buscarProductoPorCodigo(ventaId, codigo);
+    }
+
+    @PostMapping("/actualizar-cantidad")
+    public String actualizarCantidad(
+            @RequestParam Integer ventaId,
+            @RequestParam Integer detalleId,
+            @RequestParam Integer cantidad
+    ) {
+
+        ventaService.actualizarCantidad(detalleId, cantidad);
+
+        return "redirect:/web/ventas/" + ventaId;
     }
 }

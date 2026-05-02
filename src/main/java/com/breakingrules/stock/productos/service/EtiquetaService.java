@@ -7,7 +7,6 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.oned.Code128Writer;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfWriter;
-
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -16,54 +15,60 @@ import java.util.List;
 @Service
 public class EtiquetaService {
 
+    private static final float MM_TO_POINTS = 2.83465f;
+
     public byte[] generarEtiquetas(List<VarianteProducto> variantes) throws Exception {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        Document document = new Document(PageSize.A6); // etiqueta chica
-        PdfWriter.getInstance(document, baos);
+        float width = 38 * MM_TO_POINTS;
+        float height = 20 * MM_TO_POINTS;
 
+        Rectangle pageSize = new Rectangle(width, height);
+        Document document = new Document(pageSize, 0, 0, 0, 0);
+
+        PdfWriter.getInstance(document, baos);
         document.open();
 
         for (VarianteProducto v : variantes) {
 
-            // nombre producto
-            Paragraph nombre = new Paragraph(
-                    v.getProducto().getNombre(),
-                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14)
-            );
+            // UNA SOLA DESCRIPCIÓN (chica)
+            String descripcion = v.getProducto().getNombre() + " "
+                    + v.getColor().name() + " "
+                    + v.getTalle().name();
+
+            if (descripcion.length() > 22) {
+                descripcion = descripcion.substring(0, 22);
+            }
+
+            Font fontNombre = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 5);
+            Paragraph nombre = new Paragraph(descripcion, fontNombre);
             nombre.setAlignment(Element.ALIGN_CENTER);
 
             document.add(nombre);
-            document.add(Chunk.NEWLINE);
 
-            // generar barcode
+
             Code128Writer writer = new Code128Writer();
+
             BitMatrix bitMatrix = writer.encode(
-                    v.getCodigoBarras(),
+                    v.getCodigoBarras(), // numérico
                     BarcodeFormat.CODE_128,
-                    300,
-                    100
+                    160,   // 🔻 más chico = barras más gruesas
+                    90
             );
 
             ByteArrayOutputStream barcodeStream = new ByteArrayOutputStream();
             MatrixToImageWriter.writeToStream(bitMatrix, "PNG", barcodeStream);
 
             Image barcode = Image.getInstance(barcodeStream.toByteArray());
+
+            // ocupa casi toda la etiqueta
+            barcode.scaleToFit(36 * MM_TO_POINTS, 14 * MM_TO_POINTS);
             barcode.setAlignment(Image.ALIGN_CENTER);
 
             document.add(barcode);
 
-            // texto del código
-            Paragraph codigo = new Paragraph(
-                    v.getCodigoBarras(),
-                    FontFactory.getFont(FontFactory.COURIER, 12)
-            );
-            codigo.setAlignment(Element.ALIGN_CENTER);
-
-            document.add(codigo);
-
-            document.newPage(); // nueva etiqueta
+            document.newPage();
         }
 
         document.close();

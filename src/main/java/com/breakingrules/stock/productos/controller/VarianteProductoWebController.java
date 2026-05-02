@@ -111,9 +111,9 @@ public class VarianteProductoWebController {
             RedirectAttributes redirectAttributes
     ) {
 
-        if (cantidad == null || cantidad <= 0) {
+        if (cantidad == null || cantidad == 0) {
 
-            redirectAttributes.addFlashAttribute("error", "Ingresá una cantidad válida");
+            redirectAttributes.addFlashAttribute("error", "Ingresá una cantidad válida (distinta de cero)");
             redirectAttributes.addFlashAttribute("errorVarianteId", varianteId);
 
             Integer productoId = varianteService
@@ -133,7 +133,6 @@ public class VarianteProductoWebController {
 
         return "redirect:/web/variantes/" + productoId;
     }
-
     @GetMapping("/editar/{id}")
     public String editar(@PathVariable Integer id, Model model) {
 

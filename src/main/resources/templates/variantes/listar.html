@@ -281,21 +281,20 @@
             return true;
         }
 
-        document.querySelectorAll("form[action='/web/variantes/ingresar-stock']")
+        document.querySelectorAll("form[action^='/web/variantes/ingresar-stock']")
         .forEach(form => {
-
             form.addEventListener("submit", function(e){
-
                 const input = form.querySelector("input[name='cantidad']");
 
-                if(!input.value || input.value <= 0){
+                const valor = parseInt(input.value);
+
+                if(input.value.trim() === "" || isNaN(valor) || valor === 0){
                     e.preventDefault();
-                    alert("Ingresá una cantidad válida");
+                    alert("Ingresá una cantidad válida (distinta de cero)");
                     input.focus();
                 }
 
             });
-
         });
     </script>
 

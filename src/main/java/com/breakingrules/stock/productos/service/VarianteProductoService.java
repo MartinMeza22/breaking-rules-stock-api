@@ -40,4 +40,6 @@ public interface VarianteProductoService {
     void sumarStock(Integer varianteId, Integer cantidad);
 
     List<Talle> obtenerTallesPorTipo(TipoTalle tipo);
+
+    VarianteProducto obtenerPorCodigo(String codigo);
 }

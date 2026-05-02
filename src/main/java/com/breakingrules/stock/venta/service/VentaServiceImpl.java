@@ -24,7 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -98,31 +101,56 @@ public class VentaServiceImpl implements VentaService {
         VarianteProducto variante = varianteRepository.findById(varianteId)
                 .orElseThrow(() -> new RuntimeException("Variante no encontrada"));
 
-        Cliente cliente = venta.getCliente();
-        Producto producto = variante.getProducto();
+        Optional<VentaDetalle> existente =
+                detalleRepository.findDetalle(ventaId, varianteId);
 
-        BigDecimal precio;
+        if (existente.isPresent()) {
 
-        if(cliente.getTipoCliente() == TipoCliente.MAYORISTA){
-            precio = producto.getPrecioBaseMayorista();
-        }else{
-            precio = producto.getPrecioBasePublico();
+            //  YA EXISTE → SUMAR
+            VentaDetalle detalle = existente.get();
+
+            int nuevaCantidad = detalle.getCantidad() + cantidad;
+
+            detalle.setCantidad(nuevaCantidad);
+            detalle.setSubtotal(
+                    detalle.getPrecioUnitario()
+                            .multiply(BigDecimal.valueOf(nuevaCantidad))
+            );
+
+            detalleRepository.save(detalle);
+
+        } else {
+
+            //  NUEVO
+            BigDecimal precio = venta.getCliente().getTipoCliente() == TipoCliente.MAYORISTA
+                    ? variante.getPrecioMayoristaFinal()
+                    : variante.getPrecioPublicoFinal();
+
+            VentaDetalle detalle = new VentaDetalle();
+            detalle.setVenta(venta);
+            detalle.setVariante(variante);
+            detalle.setCantidad(cantidad);
+            detalle.setPrecioUnitario(precio);
+            detalle.setSubtotal(precio.multiply(BigDecimal.valueOf(cantidad)));
+
+            detalle.setNombreProducto(variante.getProducto().getNombre());
+            detalle.setSkuProducto(variante.getProducto().getSku());
+
+            detalleRepository.save(detalle);
         }
-        VentaDetalle detalle = new VentaDetalle();
-        detalle.setVenta(venta);
-        detalle.setVariante(variante);
-        detalle.setCantidad(cantidad);
-        detalle.setPrecioUnitario(precio);
-        detalle.setSubtotal(precio.multiply(BigDecimal.valueOf(cantidad)));
 
-        detalle.setNombreProducto(variante.getProducto().getNombre());
-        detalle.setSkuProducto(variante.getProducto().getSku());
+        //  recalcular SIEMPRE desde DB
+        List<VentaDetalle> detalles = detalleRepository.findByVentaId(ventaId);
 
-        detalleRepository.save(detalle);
+        BigDecimal total = detalles.stream()
+                .map(VentaDetalle::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal nuevoTotal = venta.getTotal().add(detalle.getSubtotal());
-        venta.setTotal(nuevoTotal);
+        venta.setTotal(total);
 
+        ventaRepository.save(venta);
+
+        //  stock
         varianteService.descontarStock(varianteId, cantidad);
     }
 
@@ -330,7 +358,7 @@ public class VentaServiceImpl implements VentaService {
         Venta venta = ventaRepository.findById(ventaId)
                 .orElse(null);
 
-        if (venta == null) return; // 🔥 evita el 500
+        if (venta == null) return; //  evita el 500
 
         boolean sinProductos = venta.getDetalles() == null || venta.getDetalles().isEmpty();
 
@@ -338,5 +366,110 @@ public class VentaServiceImpl implements VentaService {
             venta.setEstado(EstadoVenta.ANULADA);
             ventaRepository.save(venta);
         }
+    }
+
+    @Override
+    public Map<String, Object> agregarProductoPorCodigo(Integer ventaId, String codigo) {
+
+        Venta venta = ventaRepository.findById(ventaId)
+                .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
+
+        VarianteProducto variante = varianteService.obtenerPorCodigo(codigo);
+
+        Optional<VentaDetalle> existente =
+                detalleRepository.findDetalle(ventaId, variante.getId());
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (existente.isPresent()) {
+
+            VentaDetalle detalle = existente.get();
+
+            int nuevaCantidad = detalle.getCantidad() + 1;
+
+            detalle.setCantidad(nuevaCantidad);
+
+            detalle.setSubtotal(
+                    detalle.getPrecioUnitario()
+                            .multiply(BigDecimal.valueOf(nuevaCantidad))
+            );
+
+            detalleRepository.saveAndFlush(detalle);
+
+            response.put("existe", true);
+
+        } else {
+
+            VentaDetalle detalle = new VentaDetalle();
+            detalle.setVenta(venta);
+            detalle.setVariante(variante);
+            detalle.setCantidad(1);
+
+            detalle.setPrecioUnitario(
+                    venta.getCliente().getTipoCliente() == TipoCliente.MAYORISTA
+                            ? variante.getPrecioMayoristaFinal()
+                            : variante.getPrecioPublicoFinal()
+            );
+
+            detalle.setSubtotal(detalle.getPrecioUnitario());
+
+            detalleRepository.saveAndFlush(detalle);
+
+            response.put("existe", false);
+        }
+
+        //  recalcular desde DB
+        List<VentaDetalle> detalles = detalleRepository.findByVentaId(ventaId);
+
+        BigDecimal total = detalles.stream()
+                .map(VentaDetalle::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        venta.setTotal(total);
+
+        ventaRepository.saveAndFlush(venta); //  ESTE ERA EL BUG
+
+        response.put("id", variante.getId());
+
+        return response;
+    }
+
+    public void actualizarCantidad(Integer detalleId, Integer cantidad) {
+
+        VentaDetalle detalle = detalleRepository.findById(detalleId)
+                .orElseThrow(() -> new RuntimeException("Detalle no encontrado"));
+
+        if (cantidad <= 0) {
+            throw new RuntimeException("Cantidad inválida");
+        }
+
+        detalle.setCantidad(cantidad);
+
+        // actualizar subtotal
+        detalle.setSubtotal(
+                detalle.getPrecioUnitario()
+                        .multiply(BigDecimal.valueOf(cantidad))
+        );
+
+        // usar método existente
+        recalcularTotal(detalle.getVenta());
+    }
+
+    public Map<String, Object> buscarProductoPorCodigo(Integer ventaId, String codigo) {
+
+        VarianteProducto variante = varianteService.obtenerPorCodigo(codigo);
+
+        Venta venta = ventaRepository.findById(ventaId)
+                .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
+
+        boolean existe = detalleRepository
+                .findDetalle(ventaId, variante.getId())
+                .isPresent();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", variante.getId());
+        response.put("existe", existe);
+
+        return response;
     }
 }

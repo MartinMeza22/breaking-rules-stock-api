@@ -29,6 +29,7 @@ import com.google.zxing.*;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.oned.Code128Writer;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.*;
 @Service
@@ -63,14 +64,39 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    @Transactional
     public Producto actualizar(Producto producto) {
         log.info("Actualizando producto ID: {}", producto.getId());
 
-        prepararYValidar(producto);
+        Producto existente = repository.findById(producto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
 
-        Producto guardado = repository.save(producto);
-        log.info("Producto actualizado correctamente: {}", guardado.getId());
-        return guardado;
+        existente.setSku(producto.getSku());
+        existente.setNombre(producto.getNombre());
+        existente.setCosto(producto.getCosto());
+        existente.setPrecioBasePublico(producto.getPrecioBasePublico());
+        existente.setPrecioBaseMayorista(producto.getPrecioBaseMayorista());
+
+        existente.setPrecioEspecial1Publico(producto.getPrecioEspecial1Publico());
+        existente.setPrecioEspecial1Mayorista(producto.getPrecioEspecial1Mayorista());
+        existente.setPrecioEspecial2Publico(producto.getPrecioEspecial2Publico());
+        existente.setPrecioEspecial2Mayorista(producto.getPrecioEspecial2Mayorista());
+        existente.setPrecioEspecial3Publico(producto.getPrecioEspecial3Publico());
+        existente.setPrecioEspecial3Mayorista(producto.getPrecioEspecial3Mayorista());
+
+        existente.setProveedor(producto.getProveedor());
+        existente.setTipoTalle(producto.getTipoTalle());
+
+        if (existente.getVariantes() != null) {
+            log.info("Regenerando códigos para {} variantes", existente.getVariantes().size());
+            for (VarianteProducto v : existente.getVariantes()) {
+                v.generarCodigoBarras();
+            }
+        }
+
+        prepararYValidar(existente);
+
+        return repository.save(existente);
     }
 
     private void prepararYValidar(Producto producto) {
