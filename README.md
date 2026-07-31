@@ -1,4 +1,4 @@
-# Breaking Rules Stock - API
+# Breaking Rules - API
 
 API REST desarrollada con Spring Boot para la gestión de inventario y ventas de productos.  
 Proyecto orientado a practicar buenas prácticas de backend con arquitectura en capas y validaciones de negocio. Cliente real
